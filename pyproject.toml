@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "isowr"
+version = "0.1.0"
+description = "A simple CLI utility for writing disk images to block devices"
+requires-python = ">=3.13"
+
+[project.scripts]
+isowr = "isowr.cli:main"
