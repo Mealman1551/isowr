@@ -2,11 +2,23 @@ import argparse
 from pathlib import Path
 
 
-VERSION = "0.1.0"
+VERSION = "0.1.2"
 
+
+def is_iso9660(path):
+    with path.open("rb") as file:
+        file.seek(32769)
+        identifier = file.read(5)
+
+    return identifier == b"CD001"
 
 def info(image):
     path = Path(image)
+
+    if is_iso9660(path):
+        print("Type: ISO 9660")
+    else:
+        print("Type: Unknown")
 
     if not path.exists():
         print(f"Error: file not found: {path}")
