@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+from .devices import get_disks, get_device_path, format_size
 
 
 VERSION = "0.1.2"
@@ -60,10 +61,19 @@ def main():
         help="Path to the image"
     )
 
+    devices_parser = subparsers.add_parser(
+    "devices",
+    help="List available disk devices"
+)
+
     args = parser.parse_args()
 
     if args.command == "info":
         return info(args.image)
+
+    if args.command == "devices":
+        for device in get_disks():
+            print(f"{get_device_path(device)}\t{format_size(device['size'])}")
 
 
 if __name__ == "__main__":
