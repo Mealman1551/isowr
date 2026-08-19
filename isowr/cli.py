@@ -3,7 +3,7 @@ from pathlib import Path
 from .devices import get_disks, get_device_path, format_size
 
 
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 
 def is_iso9660(path):
