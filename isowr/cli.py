@@ -1,9 +1,8 @@
 import argparse
 from pathlib import Path
-from .devices import get_disks, get_device_path, format_size
+from .devices import get_disks, get_device_path, format_size, get_safety_reason
 
-
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 
 
 def is_iso9660(path):
@@ -73,7 +72,14 @@ def main():
 
     if args.command == "devices":
         for device in get_disks():
-            print(f"{get_device_path(device)}\t{format_size(device['size'])}")
+            path = get_device_path(device)
+            size = format_size(device["size"])
+            reason = get_safety_reason(device)
+
+            if reason:
+                print(f"{path}\t{size}\tUNSAFE: {reason}")
+            else:
+                print(f"{path}\t{size}\tNo safety issues detected")
 
 
 if __name__ == "__main__":
