@@ -22,6 +22,19 @@ def get_disks():
         for device in devices
         if device["type"] == "disk"
     ]
+    
+def get_safety_reason(device):
+    if device["ro"]:
+        return "read-only"
+
+    for partition in device.get("children", []):
+        for mountpoint in partition.get("mountpoints", []):
+            if mountpoint == "/":
+                return "system root"
+            if mountpoint == "[SWAP]":
+                return "swap"
+
+    return None
 
 def get_device_path(device):
     return f"/dev/{device['name']}"
@@ -37,4 +50,5 @@ def format_size(size):
     return f"{size:.1f} PB"
 
 if __name__ == "__main__":
-    print(get_disks())
+    for device in get_disks():
+        print(get_device_path(device), get_safety_reason(device))
