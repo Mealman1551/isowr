@@ -22,6 +22,15 @@ def get_disks():
         for device in devices
         if device["type"] == "disk"
     ]
+
+def get_disk(device_path):
+    device_name = device_path.removeprefix("/dev/")
+
+    for device in get_disks():
+        if device["name"] == device_name:
+            return device
+
+    return None
     
 def get_safety_reason(device):
     if device["ro"]:
