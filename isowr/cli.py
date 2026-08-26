@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from .devices import get_disks, get_device_path, format_size, get_safety_reason, get_disk
+from .devices import get_disks, get_device_path, format_size, get_safety_reason, get_writable_device
 
 VERSION = "0.1.5"
 
@@ -51,12 +51,12 @@ def validate_image(image):
     return None
 
 def validate_write(device):
-    disk = get_disk(device)
+    target = get_writable_device(device)
 
-    if disk is None:
+    if target is None:
         return f"device not found: {device}"
 
-    reason = get_safety_reason(disk)
+    reason = get_safety_reason(target)
 
     if reason:
         return f"unsafe device: {reason}"
