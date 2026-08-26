@@ -1,6 +1,26 @@
 import json
 import subprocess
 
+def get_writable_device(device_path):
+    device = get_device(device_path)
+
+    if device is None:
+        return None
+
+    if device["type"] not in ("disk", "loop"):
+        return None
+
+    return device
+
+
+def get_device(device_path):
+    device_name = device_path.removeprefix("/dev/")
+
+    for device in get_devices():
+        if device["name"] == device_name:
+            return device
+
+    return None
 
 def get_devices():
     result = subprocess.run(
@@ -14,6 +34,15 @@ def get_devices():
 
     return data["blockdevices"]
 
+def get_loop_devices():
+    devices = get_devices()
+
+    return [
+        device
+        for device in devices
+        if device["type"] == "loop"
+    ]
+
 def get_disks():
     devices = get_devices()
 
@@ -24,11 +53,12 @@ def get_disks():
     ]
 
 def get_disk(device_path):
-    device_name = device_path.removeprefix("/dev/")
+    device = get_device(device_path)
 
-    for device in get_disks():
-        if device["name"] == device_name:
-            return device
+    if device is None or device["type"] != "disk":
+        return None
+
+    return device
 
     return None
     
