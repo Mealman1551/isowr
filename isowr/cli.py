@@ -2,6 +2,8 @@ import argparse
 from pathlib import Path
 from .devices import get_disks, get_device_path, format_size, get_safety_reason, get_writable_device
 
+from .writer import write_image
+
 VERSION = "0.1.5"
 
 
@@ -84,8 +86,19 @@ def write(image, device):
         print(f"ERROR: {error}")
         print("Write aborted.")
         return 1
+    
+    print("Writing image...")
 
-    print("DRY RUN: no data will be written.")
+    try:
+        total = write_image(image, device)
+    except PermissionError:
+        print("ERROR: permission denied")
+        return 1
+    except OSError as error:
+        print(f"ERROR: write failed: {error}")
+        return 1
+
+    print(f"Written: {total} bytes")
     return 0
 
 def main():
