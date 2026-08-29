@@ -2,19 +2,30 @@ import argparse
 from pathlib import Path
 from .devices import get_disks, get_device_path, format_size, get_safety_reason, get_writable_device
 import os
+import time
 from .writer import write_image
 
-VERSION = "0.1.9"
+VERSION = "0.1.10"
 
-def show_progress(written, total):
+def show_progress(written, total, start_time):
     percentage = written / total * 100
+    elapsed = time.monotonic() - start_time
+    speed = written / elapsed if elapsed > 0 else 0
+
     width = 30
     filled = int(width * written / total)
     bar = "█" * filled + "░" * (width - filled)
 
-    print(f"\r[{bar}] {percentage:5.1f}% {written} / {total} bytes", end="", flush=True)
+    speed_mib = speed / (1024 * 1024)
 
-
+    print(
+        f"\r[{bar}] {percentage:5.1f}% "
+        f"{written} / {total} bytes "
+        f"{speed_mib:.1f} MiB/s",
+        end="",
+        flush=True
+    )
+    
 def is_iso9660(path):
     with path.open("rb") as file:
         file.seek(32769)
@@ -25,11 +36,6 @@ def is_iso9660(path):
 def info(image):
     path = Path(image)
 
-    if is_iso9660(path):
-        print("Type: ISO 9660")
-    else:
-        print("Type: Unknown")
-
     if not path.exists():
         print(f"Error: file not found: {path}")
         return 1
@@ -37,6 +43,11 @@ def info(image):
     if not path.is_file():
         print(f"Error: not a file: {path}")
         return 1
+
+    if is_iso9660(path):
+        print("Type: ISO 9660")
+    else:
+        print("Type: Unknown")
 
     size = path.stat().st_size
 
@@ -74,7 +85,6 @@ def validate_write(device):
     return None
 
 def write(image, device):
-
     error = validate_image(image)
 
     if error:
@@ -82,8 +92,6 @@ def write(image, device):
         print("Write aborted.")
         return 1
 
-
-    
     print(f"Image:  {image}")
     print(f"Target: {device}")
     print()
@@ -94,32 +102,35 @@ def write(image, device):
         print(f"ERROR: {error}")
         print("Write aborted.")
         return 1
-    
+
     print("Writing image...")
 
     try:
-        
         total_size = os.path.getsize(image)
-        
+        start_time = time.monotonic()
+
         total = write_image(
-    image,
-    device,
-    progress_callback=lambda written: show_progress(written, total_size)
-    )
-        print()
-        print(f"Write complete.")
-        
-        
-        
-        
+            image,
+            device,
+            progress_callback=lambda written: show_progress(
+                written,
+                total_size,
+                start_time
+            )
+        )
+
     except PermissionError:
-        print("ERROR: permission denied")
-        return 1
-    except OSError as error:
-        print(f"ERROR: write failed: {error}")
+        print("\nERROR: permission denied")
         return 1
 
+    except OSError as error:
+        print(f"\nERROR: write failed: {error}")
+        return 1
+
+    print()
+    print("Write complete.")
     print(f"Written: {total} bytes")
+
     return 0
 
 def main():
