@@ -1,10 +1,18 @@
 import argparse
 from pathlib import Path
 from .devices import get_disks, get_device_path, format_size, get_safety_reason, get_writable_device
-
+import os
 from .writer import write_image
 
-VERSION = "0.1.5"
+VERSION = "0.1.9"
+
+def show_progress(written, total):
+    percentage = written / total * 100
+    width = 30
+    filled = int(width * written / total)
+    bar = "█" * filled + "░" * (width - filled)
+
+    print(f"\r[{bar}] {percentage:5.1f}% {written} / {total} bytes", end="", flush=True)
 
 
 def is_iso9660(path):
@@ -90,7 +98,20 @@ def write(image, device):
     print("Writing image...")
 
     try:
-        total = write_image(image, device)
+        
+        total_size = os.path.getsize(image)
+        
+        total = write_image(
+    image,
+    device,
+    progress_callback=lambda written: show_progress(written, total_size)
+    )
+        print()
+        print(f"Write complete.")
+        
+        
+        
+        
     except PermissionError:
         print("ERROR: permission denied")
         return 1
