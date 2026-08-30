@@ -5,7 +5,7 @@ import os
 import time
 from .writer import write_image
 
-VERSION = "0.1.10"
+VERSION = "0.1.11"
 
 def show_progress(written, total, start_time):
     percentage = written / total * 100
