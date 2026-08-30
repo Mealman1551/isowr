@@ -1,3 +1,4 @@
+import os
 def write_image(image, target, block_size=4 * 1024 * 1024, progress_callback=None):
     total = 0
 
@@ -8,5 +9,8 @@ def write_image(image, target, block_size=4 * 1024 * 1024, progress_callback=Non
 
             if progress_callback:
                 progress_callback(total)
+
+        destination.flush()
+        os.fsync(destination.fileno())
 
     return total
